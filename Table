@@ -1,0 +1,131 @@
+DROP TABLE IF EXISTS actor;
+
+CREATE TABLE actor
+(
+  act_id INT NOT NULL,
+  act_fname CHAR(20) NOT NULL,
+  act_lname CHAR(20) NOT NULL,
+  act_gender CHAR(1) NOT NULL,
+  PRIMARY KEY(act_id)
+)ENGINE=InnoDB;
+
+
+
+
+
+
+
+DROP TABLE IF EXISTS director;
+
+CREATE TABLE director
+(
+  dir_id INT NOT NULL,
+  dir_fname CHAR(20) NOT NULL,
+  dir_lname CHAR(20) NOT NULL,
+  PRIMARY KEY(dir_id)
+)ENGINE=InnoDB;
+
+
+
+
+DROP TABLE IF EXISTS genres;
+
+CREATE TABLE genres
+(
+  gen_id INT NOT NULL,
+  gen_title CHAR(20) NOT NULL,
+  PRIMARY KEY(gen_id)
+)ENGINE=InnoDB;
+
+
+
+
+
+
+DROP TABLE IF EXISTS movie;
+
+CREATE TABLE movie
+(
+  mov_id INT NOT NULL,
+  mov_title CHAR(50) NOT NULL,
+  mov_year INT NOT NULL,
+  mov_time INT NOT NULL,
+  mov_lang CHAR(50) NOT NULL,
+  mov_dt_rel DATE DEFAULT NULL,
+  mov_rel_country CHAR(5) NOT NULL,
+  PRIMARY KEY(mov_id)
+)ENGINE=InnoDB;
+
+
+
+
+
+
+DROP TABLE IF EXISTS movie_genres;
+
+CREATE TABLE movie_genres
+(
+  mov_id INT NOT NULL,
+  gen_id INT NOT NULL,
+  FOREIGN KEY(gen_id) REFERENCES genres(gen_id) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY(mov_id) REFERENCES movie(mov_id) ON DELETE CASCADE ON UPDATE CASCADE
+)ENGINE=InnoDB;
+
+
+
+
+
+DROP TABLE IF EXISTS reviewer;
+
+CREATE TABLE reviewer
+(
+  rev_id INT NOT NULL,
+  rev_name CHAR(30),
+  PRIMARY KEY(rev_id)
+)ENGINE=InnoDB;
+
+
+
+
+
+DROP TABLE IF EXISTS rating;
+
+CREATE TABLE rating
+(
+  mov_id INT NOT NULL,
+  rev_id INT NOT NULL,
+  rev_stars DOUBLE(4,2) DEFAULT NULL,
+  num_o_ratings INT DEFAULT NULL,
+  FOREIGN KEY(rev_id) REFERENCES reviewer(rev_id) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY(mov_id) REFERENCES movie(mov_id)  ON DELETE CASCADE ON UPDATE CASCADE
+)ENGINE=InnoDB;
+
+
+
+
+
+DROP TABLE IF EXISTS movie_cast;
+
+CREATE TABLE movie_cast
+(
+  act_id INT NOT NULL,
+  mov_id INT NOT NULL,
+  role CHAR(30) NOT NULL,
+  FOREIGN KEY(act_id) REFERENCES actor(act_id)  ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY(mov_id) REFERENCES movie(mov_id)  ON DELETE CASCADE ON UPDATE CASCADE
+)ENGINE=InnoDB;
+
+
+
+
+DROP TABLE IF EXISTS movie_direction;
+
+CREATE TABLE movie_direction
+(
+  mov_id INT NOT NULL,
+  dir_id INT NOT NULL,
+  FOREIGN KEY(dir_id) REFERENCES director(dir_id)  ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY(mov_id) REFERENCES movie(mov_id)  ON DELETE CASCADE ON UPDATE CASCADE
+)ENGINE=InnoDB;
+
+
