@@ -1,0 +1,678 @@
+
+1) select mov_title,
+       mov_year
+   from movie;
+
+
+
+2)  select mov_year
+    from movie 
+    where mov_title = 'American Beauty';
+
+
+3)  select mov_title 
+    from movie 
+    where mov_year=1999;
+
+
+4)  select mov_title 
+    from movie 
+    where mov_year<1998;
+
+
+5)  select mov_id as "movie id",
+           mov_title as "movie tilte"
+    from movie
+    union
+    select rev_id as "reviewer id",
+           rev_name as "reviewer name"
+    from reviewer;
+
+    
+    OR
+
+
+    select mov_title as "movie tilte"
+    from movie
+    union
+    select  rev_name as "reviewer name"
+    from reviewer;
+ 
+
+6)  select reviewer.rev_id,
+           rev_name
+    from reviewer,rating
+    where reviewer.rev_id=rating.rev_id AND rating.rev_stars>=7.00 AND reviewer.rev_name IS NOT NULL; 
+
+
+7)  select mov_title
+    from movie
+    where mov_id NOT IN (select mov_id from rating);
+
+8)  select mov_title
+    from movie
+    where mov_id in (905,907,917);
+
+
+9)  select mov_title,
+           mov_year
+    from movie 
+    where mov_title like '%Boogie Night%';
+
+
+
+10)  select  act_id,
+             act_fname "first name",
+             act_lname "last name"
+     from actor
+     where act_fname = 'Woody' AND act_lname = 'Allen';
+
+
+
+11)  select distinct(actor.act_id),
+            act_fname,
+            act_lname,
+            act_gender,
+            role
+     from actor
+     join movie_cast on actor.act_id = movie_cast.act_id
+     join movie on movie_cast.mov_id = movie.mov_id
+     where mov_title='Annie Hall';
+
+
+     OR
+
+
+     SELECT * 
+     FROM actor 
+     WHERE act_id IN(
+     SELECT act_id 
+     FROM movie_cast 
+     WHERE mov_id IN (
+     SELECT mov_id 
+     FROM movie 
+     WHERE mov_title='Annie Hall'));
+
+
+
+12)   SELECT dir_fname, dir_lname
+      FROM  director
+      WHERE dir_id in (
+      SELECT dir_id 
+      FROM movie_direction
+      WHERE mov_id in(
+      SELECT mov_id 
+      FROM movie_cast WHERE role = ANY (
+      SELECT role 
+      FROM movie_cast 
+      WHERE mov_id IN (
+      SELECT  mov_id 
+      FROM movie 
+      WHERE mov_title='Eyes Wide Shut'))));
+
+
+
+13)   select mov_title
+      from movie
+      where mov_rel_country not in ('UK');
+
+
+
+
+14)   SELECT mov_title, mov_year, mov_dt_rel, dir_fname, dir_lname, 
+            act_fname, act_lname
+      FROM movie a, movie_direction b, director c, 
+      rating d, reviewer e, actor f, movie_cast g 
+      WHERE a.mov_id=b.mov_id
+      AND  b.dir_id=c.dir_id 
+      AND a.mov_id=d.mov_id 
+      AND  d.rev_id=e.rev_id 
+      AND  a.mov_id=g.mov_id 
+      AND g.act_id=f.act_id 
+      AND e.rev_name IS NULL;
+
+
+
+
+
+
+15)   select mov_title
+      from movie
+      where mov_id in (select mov_id from movie_direction where dir_id in (select dir_id from director where dir_fname='woody' and dir_lname='allen')); 
+
+
+ 
+16)  select mov_year
+     from movie
+     where mov_id in (select mov_id from rating where rev_stars>3.00)
+     group by mov_year
+     order by mov_year;
+
+
+
+17)  select mov_id,
+            mov_title
+     from movie
+     where mov_id in (select mov_id from movie where mov_id not in (select mov_id from rating));
+
+
+
+18)  select rev_name 
+     from reviewer
+     where rev_id in (select rev_id from rating where rev_stars is NULL);
+
+
+19)  select rev_name,
+            mov_title,
+            rev_stars
+     from reviewer r, rating ra, movie m
+     where r.rev_id = ra.rev_id
+     AND ra.mov_id = m.mov_id
+     AND rev_stars IS NOT NULL
+     AND rev_name IS NOT NULL
+     order by rev_name,mov_title,rev_stars;
+
+
+20)  select rev_name,
+            m.mov_title
+     from reviewer r, rating ra, movie m,rating r2
+     where r.rev_id = ra.rev_id
+     AND ra.mov_id = m.mov_id
+     AND ra.rev_id = r2.rev_id 
+     group by rev_name,mov_title  HAVING count(*)>1;
+
+
+
+21)  select mov_title,
+            rev_stars
+     from movie 
+     natural join rating
+     where rev_stars is not null
+     group by mov_title
+     order by mov_title;
+
+
+
+
+
+22)  select rev_name
+     from reviewer
+     where rev_id = (select rev_id from rating where mov_id in (select mov_id from movie where mov_title = 'American Beauty'));
+
+
+     OR
+
+    
+     SELECT DISTINCT reviewer.rev_name
+     FROM reviewer, rating, movie
+     WHERE reviewer.rev_id = rating.rev_id
+     AND movie.mov_id = rating.mov_id
+     AND movie.mov_title = 'American Beauty';
+
+
+
+
+23)  SELECT movie.mov_title
+     FROM movie 
+     WHERE movie.mov_id IN(
+     SELECT mov_id 
+     FROM rating 
+     WHERE rev_id NOT IN (
+     SELECT rev_id 
+     FROM reviewer 
+     WHERE rev_name='Paul Monks'));
+
+
+24)  select rev_name,
+            mov_title,
+            min(rev_stars)
+     from reviewer rv,movie m,rating r,
+     (select rev_id as found1 ,mov_id found2 ,rev_stars found3 from rating where rev_stars is not null order by rev_stars limit 1) as found
+     where rv.rev_id = found.found1 
+     AND m.mov_id = found.found2;
+
+
+     OR
+    
+
+     SELECT reviewer.rev_name, movie.mov_title, rating.rev_stars
+     FROM reviewer, movie, rating
+     WHERE rating.rev_stars = (SELECT MIN(rating.rev_stars) FROM rating)
+     AND rating.rev_id = reviewer.rev_id
+     AND rating.mov_id = movie.mov_id;
+      
+
+25)  select mov_title
+     from movie
+     where mov_id in (select mov_id from movie_direction where dir_id = (select dir_id from director where dir_fname= 'James' and dir_lname = 'Cameron')); 
+
+     
+     OR
+
+     
+     SELECT mov_title FROM movie 
+     JOIN  movie_direction 
+     ON movie.mov_id=movie_direction.mov_id
+     JOIN  director 
+     ON movie_direction.dir_id=director.dir_id
+     WHERE dir_fname = 'James' AND dir_lname='Cameron';
+
+
+
+26)  SELECT mov_title 
+     FROM movie 
+     WHERE mov_id IN (
+     SELECT mov_id 
+     FROM movie_cast 
+     WHERE act_id IN (
+     SELECT act_id 
+     FROM actor 
+     WHERE act_id IN (
+     SELECT act_id  
+     FROM movie_cast GROUP BY act_id 
+     HAVING COUNT(act_id)>1)));
+
+
+
+27)  select rev_name
+     from reviewer rv ,rating ra
+     where rv.rev_id = ra.rev_id 
+     AND ra.rev_stars is NULL;
+
+
+     OR
+     
+     
+     SELECT rev_name
+     FROM reviewer
+     INNER JOIN rating USING(rev_id)
+     WHERE rev_stars IS NULL;
+
+
+
+
+28)   select distinct(act_fname),
+            act_lname,
+            role
+     from actor
+     join movie_cast
+     on movie_cast.act_id = actor.act_id
+     join movie
+     on movie_cast.mov_id = movie.mov_id
+     AND mov_title = 'Annie Hall';
+
+
+
+29)  select mov_title,
+            concat(dir_fname,' ',dir_lname) as director
+     from movie m
+     natural join movie_direction
+     natural join director 
+     natural join movie_cast
+     WHERE role IS  NOT NULL
+     AND mov_title="Eyes Wide Shut";
+
+
+30)  select mov_title,
+            concat(dir_fname,' ',dir_lname) as director
+     from movie m
+     natural join movie_direction
+     natural join director 
+     natural join movie_cast
+     WHERE role='Sean Maguire';
+
+  
+ 
+31)  select distinct concat(act_fname,' ',act_lname) as director
+     from movie m
+     natural join movie_cast
+     natural join actor
+     WHERE mov_year not between 1990 and 2000;
+
+
+     OR 
+
+
+
+     SELECT act_fname, act_lname, mov_title, mov_year
+     FROM actor
+     JOIN movie_cast 
+     ON actor.act_id=movie_cast.act_id
+     JOIN movie 
+     ON movie_cast.mov_id=movie.mov_id
+     WHERE mov_year NOT BETWEEN 1990 and 2000;
+
+
+32)  select concat(dir_fname,' ',dir_lname) as director,
+            gen_title,
+            count(*)
+     from director d
+     natural join movie_direction 
+     natural join movie_genres
+     natural join genres 
+     group by director
+     ORDER BY dir_fname,dir_lname;
+
+
+
+33)   select mov_title,
+            mov_year,
+            gen_title
+     from movie m
+     join movie_genres mo on m.mov_id = mo.mov_id
+     join genres g on mo.gen_id = g.gen_id; 
+
+
+
+
+34)   select mov_title,
+            mov_year,
+            gen_title,
+            concat(dir_fname,' ',dir_lname) as director
+     from movie m
+     join movie_genres mo on m.mov_id = mo.mov_id
+     join genres g on mo.gen_id = g.gen_id
+     join movie_direction md on m.mov_id = md.mov_id
+     join director d on md.dir_id = d.dir_id;
+            
+
+
+
+35)  select mov_title as "movie",
+            mov_year as "year",
+            mov_dt_rel as "release",
+            mov_time as "duration",
+            concat(dir_fname,' ',dir_lname) as "director"
+     from movie m
+     join movie_direction md on md.mov_id = m.mov_id
+     join director d on d.dir_id = md.dir_id
+     where mov_dt_rel<'1989-01-01'
+     order by mov_dt_rel desc;
+ 
+           
+
+36)  select mov_title,
+            gen_title,
+            avg(mov_time),
+            count(*)
+     from movie m
+     join movie_genres mo on m.mov_id = mo.mov_id
+     join genres g on g.gen_id = mo.gen_id
+     group by g.gen_title;
+
+
+
+
+37)  select distinct(mov_title),
+            mov_year,
+            concat(dir_fname,' ',dir_lname) as director,
+            concat(act_fname,' ',act_lname) as actor,
+            role
+     from movie m
+     join movie_direction md on m.mov_id = md.mov_id
+     join director d on d.dir_id = md.dir_id
+     join movie_cast mo on mo.mov_id = md.mov_id
+     join actor a on a.act_id = mo.act_id
+     where mov_time = (select min(mov_time) from movie);  
+
+
+
+38)  select mov_title,
+            mov_year,
+            rev_stars
+     from movie
+     natural join rating 
+     where rev_stars between 3.00 and 4.00 
+     group by mov_year
+     order by mov_year;  
+
+
+
+
+
+
+39)  select rev_name,
+            mov_title,
+            rev_stars
+     from movie m
+     join rating ra 
+     on ra.mov_id = m.mov_id
+     join reviewer r
+     on r.rev_id = ra.rev_id
+     where rev_name is not null
+     order by rev_name,mov_title;
+
+
+
+40)  select mov_title,
+            rev_stars
+     from movie m
+     join rating r
+     on m.mov_id = r.mov_id 
+     where rev_stars>=1
+     order by mov_title;
+
+
+41)  select concat(dir_fname,' ',dir_lname) as director,
+            mov_title,
+            rev_stars
+     from movie m
+     join movie_direction md on m.mov_id = md.mov_id
+     join director d on md.dir_id = d.dir_id 
+     join rating ra on m.mov_id = ra.mov_id 
+     where rev_stars is not null;
+
+
+42) SELECT distinct mov_title, act_fname, act_lname, role
+           FROM movie 
+           JOIN movie_cast 
+           ON movie_cast.mov_id=movie.mov_id 
+           JOIN actor 
+           ON movie_cast.act_id=actor.act_id
+           WHERE actor.act_id IN (
+           SELECT act_id 
+           FROM movie_cast 
+           GROUP BY act_id HAVING COUNT(*)>=2);
+
+
+
+43)   select distinct(concat(dir_fname,' ',dir_lname)) as director,
+             mov_title,
+             role
+      from movie m
+      join movie_direction md on m.mov_id = md.mov_id
+      join director d on d.dir_id = md.dir_id
+      join movie_cast mc on mc.mov_id = m.mov_id
+      join actor a on a.act_id = mc.act_id
+      where act_fname = 'Claire'  and act_lname = 'Danes';  
+
+
+
+44)   SELECT act_fname, act_lname, mov_title, role
+      FROM actor
+      JOIN movie_cast 
+      ON actor.act_id=movie_cast.act_id
+      JOIN movie_direction 
+      ON movie_cast.mov_id=movie_direction.mov_id
+      JOIN director 
+      ON movie_direction.dir_id=director.dir_id
+      JOIN movie 
+      ON movie.mov_id=movie_direction.mov_id
+      WHERE act_fname=dir_fname 
+      AND act_lname=dir_lname;
+
+
+
+45)    select concat(act_fname,' ',act_lname) as actor,
+              role
+       from movie m
+       join movie_cast mc on m.mov_id = mc.mov_id
+       join actor a on a.act_id = mc.act_id
+       where mov_title = 'chinatown';
+
+
+
+OR
+
+
+
+
+       SELECT a.act_fname, a.act_lname
+       FROM
+       movie_cast c
+       JOIN actor a ON
+       c.act_id = a.act_id
+       Where mov_id = (
+       SELECT mov_id
+       FROM movie
+       Where mov_title = 'Chinatown');
+
+
+
+46)    select mov_title
+       from movie m
+       join movie_cast mc 
+       on mc.mov_id = m.mov_id
+       join actor a 
+       on mc.act_id = a.act_id
+       where act_fname='Harrison' and act_lname='Ford'; 
+
+
+
+
+       OR 
+
+
+
+       select mov_title
+       from actor a
+       join movie_cast mc 
+       on mc.act_id = a.act_id
+       join movie m 
+       on mc.mov_id = m.mov_id
+       where act_fname='Harrison' and act_lname='Ford'; 
+
+
+
+
+
+       OR 
+
+
+       SELECT m.mov_title
+       FROM  movie m
+       JOIN movie_cast c 
+       ON  m.mov_id = c.mov_id
+       WHERE c.act_id IN ( 
+       Select act_id 
+       FROM actor 
+       WHERE act_fname='Harrison' 
+       AND act_lname='Ford');
+
+
+
+
+47)    SELECT mov_title, mov_year, rev_stars, mov_rel_country
+       FROM movie 
+       NATURAL JOIN rating
+       WHERE rev_stars = (
+       SELECT MAX(rev_stars)
+       FROM rating
+       );
+
+
+
+       OR
+
+
+       select movie.mov_id,
+              mov_title,
+              mov_year,
+              rev_stars,
+              mov_dt_rel, 
+              mov_rel_country
+       from movie 
+       left join rating 
+       on movie.mov_id = rating.mov_id
+       order by rev_stars desc limit 1;
+
+
+
+
+48)    select m.mov_id,
+              mov_title,
+              mov_year,
+              gen_title,
+              rev_stars
+       from movie m
+       left join movie_genres mg
+       on m.mov_id = mg.mov_id
+       left join genres g
+       on mg.gen_id = g.gen_id
+       left join rating r
+       on m.mov_id = r.mov_id
+       where gen_title = 'Mystery'
+       order by rev_stars desc limit 1;
+
+
+ 
+       OR   
+
+
+       SELECT mov_title, mov_year, rev_stars
+       FROM movie 
+       NATURAL JOIN movie_genres 
+       NATURAL JOIN genres 
+       NATURAL JOIN rating
+       WHERE gen_title = 'Mystery' AND rev_stars >= ALL (
+       SELECT rev_stars
+       FROM rating 
+       NATURAL JOIN movie_genres 
+       NATURAL JOIN genres
+       WHERE gen_title = 'Mystery');
+
+
+
+49)    select mov_year,
+              count(*),
+              AVG(rev_stars)
+       from movie
+       NATURAL JOIN movie_genres
+       NATURAL JOIN genres
+       NATURAL JOIN rating
+       where gen_title = 'Mystery'
+       group by mov_year;
+
+
+
+       OR 
+
+
+
+       SELECT mov_year,gen_title,count(gen_title), avg(rev_stars)
+       FROM movie 
+       NATURAL JOIN movie_genres 
+       NATURAL JOIN genres
+       NATURAL JOIN rating
+       WHERE gen_title='Mystery' 
+       GROUP BY mov_year,gen_title;
+
+
+
+50)    select distinct(mov_title),
+              concat(act_fname,' ',act_lname) as actress,
+              mov_year,
+              role,
+              gen_title,
+              concat(dir_fname,' ',dir_lname) as director,
+              mov_dt_rel,
+              rev_stars
+              from movie
+              NATURAl JOIN movie_cast
+              NATURAL JOIN actor
+              NATURAL JOIN movie_genres
+              NATURAL JOIN genres
+              NATURAL JOIN movie_direction
+              NATURAL JOIN director
+              NATURAL JOIN rating
+              WHERE act_gender='F';
